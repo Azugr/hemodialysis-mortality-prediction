@@ -1,218 +1,150 @@
 # Hemodialysis Mortality Prediction
 
-**Development and evaluation of machine learning models for predicting 1-year all-cause mortality in patients receiving hemodialysis using publicly available clinical data.**
+## Project Overview
 
-## 1. Project Overview
+This project aims to develop and evaluate machine learning models to predict 1-year all-cause mortality among hospitalized adults with end-stage kidney disease (ESKD) receiving hemodialysis.
 
-Mortality prediction in patients receiving hemodialysis is an important challenge in clinical research. These patients frequently present with multiple comorbidities, cardiovascular complications, infections, medication burden, and complex clinical conditions.
+The model will use clinical, laboratory, nutritional, inflammatory, metabolic, and treatment-related variables available in publicly accessible clinical datasets.
 
-This project aims to develop and evaluate predictive models to identify clinical, demographic, laboratory, and treatment-related factors associated with 1-year all-cause mortality in a hemodialysis-related population.
+The prediction will be made at hospital discharge, with mortality assessed during the subsequent 365 days.
 
-The project will use publicly available, de-identified clinical data, initially exploring the MIMIC-IV database.
+The primary objective is to identify clinically relevant predictors of mortality and evaluate whether machine learning approaches can improve risk stratification in this population.
 
-## 2. Research Question
+## Research Objectives
 
-Can routinely collected demographic, clinical, laboratory, and medication-related variables predict 1-year all-cause mortality in patients receiving hemodialysis?
+- Develop predictive models for 1-year all-cause mortality.
+- Identify relevant clinical and laboratory predictors.
+- Evaluate the contribution of nutritional status, chronic inflammation, and metabolic abnormalities.
+- Investigate the relationship between iron metabolism and mortality risk.
+- Compare machine learning algorithms with traditional logistic regression.
+- Evaluate model discrimination, calibration, and clinical usefulness.
 
-## 3. Research Objectives
+## Candidate Predictors
 
-1. Identify and extract an appropriate hemodialysis patient cohort.
-2. Perform clinical data cleaning and quality assessment.
-3. Explore demographic, clinical, laboratory, and medication characteristics.
-4. Engineer clinically meaningful predictive features.
-5. Develop and compare statistical and machine learning models.
-6. Evaluate predictive performance, calibration, and interpretability.
-7. Identify the most informative predictors of mortality.
-8. Assess whether medication burden and treatment-related factors improve predictive performance.
+Variables will be organized into the following clinical domains.
 
-## 4. Candidate Predictive Variables
+### 1. Demographic Characteristics
+- Age
+- Sex
 
-Final variable selection will depend on data availability, clinical relevance, data quality, and methodological considerations.
+### 2. Comorbidities and Cardiovascular Risk
+- Diabetes mellitus
+- Hypertension
+- Cardiovascular disease
+- Heart failure
+- History of stroke
+- Antihypertensive polypharmacy (more than three medications)
 
-### A. Demographic Characteristics
+### 3. Dialysis and Clinical Characteristics
+- Hemodialysis dependence
+- Dialysis-related characteristics, when available
+- Vascular access type
+- Catheter use
+- Hospitalization history
+- Infection and sepsis
 
-| Variable | Description |
-|---|---|
-| Age | Age at prediction date |
-| Sex | Biological sex as recorded in the database |
+### 4. Nutritional Status and Protein-Energy Wasting
+- Serum albumin
+- Body mass index (BMI)
+- Serum creatinine
+- Normalized protein catabolic rate (nPCR), when available
+- Nutritional indicators, when available
 
-### B. Comorbidities and Cardiovascular Conditions
+### 5. Inflammation
+- C-reactive protein (CRP)
+- White blood cell count
+- Neutrophil count
+- Lymphocyte count
+- Neutrophil-to-lymphocyte ratio (NLR)
 
-| Variable | Description |
-|---|---|
-| Diabetes mellitus | Presence of diabetes |
-| Hypertension | History of hypertension |
-| Heart failure | Documented heart failure |
-| Ischemic heart disease | History of coronary artery disease |
-| Peripheral vascular disease | Documented peripheral vascular disease |
-| Previous stroke | History of cerebrovascular disease |
-| Valvular heart disease | Documented valvular disease |
-| Cardiac murmur | Presence of murmur on clinical examination |
-| Charlson Comorbidity Index | Summary measure of comorbidity burden |
+### 6. Metabolic and Electrolyte Status
+- Serum bicarbonate
+- Potassium
+- Calcium
+- Phosphorus
+- Other available metabolic parameters
 
-### C. Medication Burden and Hypertension Management
+Metabolic acidosis will be evaluated using serum bicarbonate as a candidate predictor.
 
-| Variable | Description |
-|---|---|
-| Antihypertensive medication count | Number of prescribed antihypertensive agents |
-| Antihypertensive polypharmacy | More than three antihypertensive medications |
-| Antihypertensive medication classes | Number and types of medication classes |
-| Blood pressure | Available systolic and diastolic measurements |
-| Blood pressure control | Controlled, uncontrolled, or unknown, according to a predefined definition |
+### 7. Iron Metabolism and Anemia
+- Ferritin
+- Transferrin saturation (TSAT)
+- Serum iron
+- Transferrin or total iron-binding capacity (TIBC)
+- Hemoglobin
+- Intravenous iron exposure, when available
+- Erythropoiesis-stimulating agent (ESA) exposure, when available
 
-Antihypertensive polypharmacy will be investigated as a potential marker of cardiovascular burden and treatment complexity.
+Ferritin will be interpreted alongside inflammatory markers because elevated ferritin does not necessarily indicate iron overload.
 
-More than three medications alone does not establish resistant hypertension. Medication adherence, appropriate drug combinations, dosing, and blood pressure measurements must be considered.
+## Outcome
 
-### D. Infection and Clinical Complications
+**Primary outcome:** All-cause mortality within 365 days after hospital discharge.
 
-| Variable | Description |
-|---|---|
-| Previous infection | Documented infection |
-| Sepsis | Documented sepsis |
-| Bloodstream infection | Documented bloodstream infection |
-| Infection-related hospitalization | Hospitalization associated with infection |
-| ICU admission | Intensive care utilization |
+## Data Sources
 
-### E. Laboratory and Nutritional Parameters
+The initial development will use publicly available, de-identified clinical data.
 
-| Variable | Description |
-|---|---|
-| Albumin | Serum albumin |
-| Hemoglobin | Hemoglobin concentration |
-| Potassium | Serum potassium |
-| Phosphorus | Serum phosphorus |
-| Calcium | Serum calcium |
-| Creatinine | Serum creatinine |
-| WBC | White blood cell count |
-| CRP | C-reactive protein, if available |
-| Bicarbonate | Serum bicarbonate, if available |
+Potential sources include:
 
-### F. Hemodialysis-Related Variables
+- MIMIC-IV
+- Other publicly accessible clinical datasets with relevant dialysis and mortality information.
 
-| Variable | Description |
-|---|---|
-| Hemodialysis status | Evidence of hemodialysis treatment |
-| Dialysis vintage | Duration of dialysis treatment, if available |
-| Vascular access type | Catheter, AV fistula, or AV graft |
-| Access complications | Documented vascular access complications |
-| Missed dialysis sessions | Missed scheduled treatments, if available |
-| Dialysis adequacy | Kt/V, if available |
+Dataset selection will depend on the availability of hemodialysis-specific clinical variables, follow-up information, and outcome definitions.
 
-## 5. Primary Outcome
+No identifiable patient information or private clinical records will be uploaded to this repository.
 
-**One-year all-cause mortality**
+## Methodology
 
-- 1 = Death within 365 days after the defined prediction date.
-- 0 = Confirmed survival at 365 days.
-- Unknown = Insufficient follow-up or unavailable outcome information.
+The planned workflow includes:
 
-The prediction date, eligible population, and follow-up methodology will be established before model development.
+1. Data acquisition and cohort definition.
+2. Data cleaning and preprocessing.
+3. Exploratory data analysis.
+4. Missing-data assessment and management.
+5. Feature engineering and selection.
+6. Logistic regression as a baseline model.
+7. Machine learning model development.
+8. Model evaluation and comparison.
+9. Interpretation of clinically relevant predictors.
 
-Patients with incomplete follow-up will not automatically be classified as survivors. Censoring and competing events will be addressed where appropriate.
+Evaluation metrics will include:
 
-## 6. Dataset
+- AUROC
+- AUPRC
+- Sensitivity
+- Specificity
+- Positive predictive value
+- Calibration
 
-**Primary candidate: MIMIC-IV**
+## Research Considerations
 
-Medical Information Mart for Intensive Care.
+- Association does not establish causation.
+- Elevated ferritin alone will not be considered proof of iron overload.
+- Nutritional and inflammatory markers will be evaluated as distinct but potentially overlapping clinical domains.
+- Missing clinical variables will be documented and assessed.
+- Data leakage will be avoided by ensuring that predictors are available at the defined prediction time.
+- Model performance and generalizability will be evaluated critically.
 
-Source: https://physionet.org/content/mimiciv/
+## Technology Stack
 
-MIMIC-IV provides de-identified hospital clinical data, including diagnoses, laboratory measurements, medications, procedures, and mortality-related information.
-
-Data access requires completion of applicable PhysioNet credentialing and training requirements.
-
-The feasibility of identifying an appropriate hemodialysis cohort and obtaining sufficient longitudinal outcome information will be assessed before finalizing the study design.
-
-## 7. Methodology and Technology Stack
-
-### Programming and Data Engineering
 - Python
 - Pandas
 - NumPy
-- SQL
-
-### Statistical Analysis and Machine Learning
 - Scikit-learn
-- Logistic Regression
-- Random Forest
-- Gradient Boosting
+- Matplotlib
+- Seaborn
+- Jupyter Notebook
 
-### Model Evaluation
-- ROC-AUC
-- Precision and Recall
-- Sensitivity and Specificity
-- Precision-Recall AUC
-- Calibration
-- Feature importance
-- Model interpretability
+Additional libraries may be incorporated as the project develops.
 
-Survival analysis methods will also be considered if the dataset and follow-up structure support time-to-event modeling.
+## Project Status
 
-## 8. Project Structure
+<text>In development.</text>
 
-```text
-hemodialysis-mortality-prediction/
-│
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── synthetic/
-│
-├── notebooks/
-│   ├── 01_exploratory_analysis.ipynb
-│   ├── 02_data_quality.ipynb
-│   ├── 03_feature_engineering.ipynb
-│   └── 04_model_development.ipynb
-│
-├── src/
-│   ├── data_validation.py
-│   ├── preprocessing.py
-│   ├── feature_engineering.py
-│   ├── modeling.py
-│   └── evaluation.py
-│
-├── tests/
-├── docs/
-├── reports/
-├── requirements.txt
-├── README.md
-└── .gitignore
-```
-
-## 9. Research and Data Ethics
-
-This project will use appropriately authorized, publicly available, de-identified datasets.
-
-No identifiable patient information or unauthorized hospital records will be uploaded to this repository.
-
-All analyses will comply with applicable dataset licenses, access agreements, and research requirements.
-
-## 10. Limitations
-
-This project is intended for research and educational purposes.
-
-Predictive associations do not establish causation. Model performance and generalizability will depend on the source population, data quality, cohort selection, and validation strategy.
-
-Hospital-based data may not represent the broader maintenance hemodialysis population.
-
-The resulting models are not intended for direct clinical decision-making.
-
-## 11. Project Status
-
-**Status: Initial development**
-
-Current priorities:
-
-- Research design and cohort definition.
-- Public dataset access.
-- Clinical variable selection.
-- Data extraction and quality assessment.
-- Development of a reproducible analytical pipeline.
+The current phase focuses on defining the study population, identifying suitable public datasets, and establishing the clinical and methodological framework.
 
 ## 12. Author
-
 
 Nephrologist | Systems Engineering | Healthcare Data & AI
 
@@ -220,3 +152,12 @@ Combining clinical expertise and engineering to explore data-driven approaches t
 
 **Author:** Dra. María Azucena García Rodríguez
 **GitHub:** [@Azugr](https://github.com/Azugr)
+
+## License
+
+MIT License
+
+---
+
+**Disclaimer:** This project is intended for research and educational purposes. It is not designed to replace clinical judgment or provide individual patient treatment recommendations.
+
