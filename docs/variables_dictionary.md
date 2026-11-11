@@ -1,159 +1,141 @@
 # Clinical Variable Dictionary
 ## Hemodialysis Mortality Prediction
+### CMS ESRD Population Public Use Files (PUF)
+
+**Version:** 2.0 – CMS dataset adaptation  
+**Status:** Preliminary; pending validation of outcome and follow-up dates.
 
 ### 1. Purpose
 
-This document defines the candidate clinical predictors for the development of a machine learning model to predict 1-year all-cause mortality among hospitalized adults with end-stage kidney disease (ESKD) receiving maintenance hemodialysis.
+This document defines the candidate clinical predictors, demographic characteristics, dialysis-related variables, and outcome measures for a clinical data science project investigating mortality among patients receiving maintenance hemodialysis.
 
-Variables are organized by clinical domain to support data identification, extraction, preprocessing, and interpretation.
+The current data source is the CMS End-Stage Renal Disease (ESRD) Population Public Use File (PUF), 2018 Q4 release.
 
-**Important:** These are proposed candidate variables. Their inclusion in the final model will depend on availability, data quality, and clinical relevance in the selected public dataset.
+The initial research question is:
 
----
+**Can routinely collected demographic, clinical, laboratory, and dialysis-related variables predict mortality among patients receiving maintenance hemodialysis?**
 
-### 2. Demographic Characteristics
+The original objective of predicting 1-year all-cause mortality remains under evaluation. Its feasibility depends on validating the available dates, follow-up periods, and mortality records.
 
-| Variable | Description | Expected format |
+**Important:** Candidate variables are not necessarily available in the currently downloaded files. Their final inclusion will depend on actual data availability, completeness, measurement timing, and clinical relevance.
+
+### 2. Study Population and Prediction Time
+
+**Target population:** Adults with evidence of maintenance hemodialysis treatment.
+
+The CMS PUF contains a broader ESRD population, including different dialysis modalities and transplantation. The maintenance hemodialysis cohort must therefore be identified using treatment-history records.
+
+**Prediction time:** Not yet finalized.
+
+The original hospital-discharge prediction point cannot be assumed to apply to this dataset. A suitable index date must be established from the available treatment and clinical records.
+
+Only information available at or before the selected index date may be used as a predictor.
+
+### 3. Demographic Characteristics
+
+| Analytical variable | CMS source | Availability / limitation |
 |---|---|---|
-| age | Patient age at index hospitalization | Numeric |
-| sex | Biological sex recorded in the dataset | Categorical |
+| age_range | PATIENT_SUMMARY: AGE_RANGE | Available as age categories, not exact age |
+| sex | PATIENT_SUMMARY: GENDER | Available |
+| race | PATIENT_SUMMARY: RACE | Available |
+| ethnicity | PATIENT_SUMMARY: ETHNICITY | Available, with substantial missingness |
+| state | PATIENT_SUMMARY: STATE | Available |
 
-### 3. Comorbidities and Cardiovascular Risk
+Age categories must not be treated as exact ages without an explicitly documented approximation strategy.
 
-| Variable | Description | Expected format |
+### 4. Comorbidities and Cardiovascular Risk
+
+| Analytical variable | CMS source | Availability / limitation |
 |---|---|---|
-| diabetes_mellitus | History of diabetes mellitus | Binary |
-| hypertension | History of hypertension | Binary |
-| cardiovascular_disease | History of cardiovascular disease | Binary |
-| heart_failure | History of heart failure | Binary |
-| stroke_history | Previous cerebrovascular event | Binary |
-| antihypertensive_polypharmacy | Use of more than three antihypertensive medications | Binary |
+| diabetes_mellitus | FORM_2728 | Available through reported comorbidity fields; form versions differ |
+| hypertension | FORM_2728 | Available |
+| cardiovascular_disease | FORM_2728 | Requires a documented definition using specific cardiac fields |
+| heart_failure | FORM_2728 | Available |
+| stroke_history | FORM_2728 | Available through cerebrovascular history fields |
+| peripheral_vascular_disease | FORM_2728 | Available |
+| coronary_artery_disease | FORM_2728 | Mapping depends on form version |
+| antihypertensive_polypharmacy | Not established | More than three medications cannot be derived from the currently documented variables |
 
-### 4. Dialysis and Clinical Characteristics
+Comorbidities must be harmonized across the 1997, 2005, and 2015 versions of Form CMS-2728.
 
-| Variable | Description | Expected format |
+A missing comorbidity field must not automatically be interpreted as absence of disease.
+
+Antihypertensive polypharmacy must not be included unless medication-level information becomes available.
+
+### 5. Dialysis and Treatment Characteristics
+
+| Analytical variable | CMS source | Availability / limitation |
 |---|---|---|
-| maintenance_hemodialysis | Evidence of maintenance hemodialysis | Binary |
-| dialysis_vintage | Time receiving maintenance dialysis | Numeric |
-| vascular_access | Type of vascular access | Categorical |
-| catheter_use | Use of a dialysis catheter | Binary |
-| infection | Documented infection during index hospitalization | Binary |
-| sepsis | Documented sepsis during index hospitalization | Binary |
-| previous_hospitalizations | Number of previous hospitalizations | Numeric |
+| maintenance_hemodialysis | ADMIT_TREATMENT: Dialysis_Type, Modality | Available; requires treatment-history reconstruction |
+| dialysis_setting | ADMIT_TREATMENT: Dialysis_Setting | Available |
+| dialysis_vintage | PATIENT_SUMMARY: DOFD; treatment records | Limited by date precision and reference-date validation |
+| sessions_per_week | ADMIT_TREATMENT: Sessions_per_Week | Available where recorded |
+| vascular_access | CL_HD_VA | Documented in the data dictionary; file not yet analyzed |
+| catheter_use | CL_HD_VA | Requires access-type classification |
+| infection | CL_HD_INFECTION | Includes infections requiring hospitalization |
+| infection_type | CL_HD_INFECTION | Includes access-related and non-access-related infection categories |
+| previous_hospitalizations | CL_HOSPITALIZATION | Requires longitudinal event reconstruction |
+| hospitalization_diagnosis | CL_HOSPITALIZATION | Includes cardiovascular, infectious, respiratory, and other diagnoses |
+| delivered_kt_v | CL_HD_ADQCY | Documented in the data dictionary; file not yet analyzed |
+| residual_renal_function | CL_HD_ADQCY | Documented in the data dictionary; file not yet analyzed |
 
-### 5. Nutritional Status and Protein-Energy Wasting
+Treatment records are not independent patient observations. Multiple facilities and treatment episodes may exist for the same patient.
 
-| Variable | Description | Expected format |
+Patient-level analyses must account for repeated records.
+
+### 6. Nutritional Status and Protein-Energy Wasting
+
+| Analytical variable | CMS source | Availability / limitation |
 |---|---|---|
-| albumin | Serum albumin concentration | Numeric |
-| bmi | Body mass index | Numeric |
-| creatinine | Serum creatinine concentration | Numeric |
-| npcr | Normalized protein catabolic rate | Numeric |
+| albumin | CL_MINERALMET | Documented in the data dictionary |
+| creatinine | Not yet confirmed | Requires verification in available files |
+| npcr | CL_HD_ADQCY | Documented in the data dictionary |
+| bmi | Not yet confirmed | Requires verification |
 
 These variables may help characterize nutritional status and protein-energy wasting. None should be interpreted independently as a definitive diagnosis of malnutrition.
 
-### 6. Inflammation
+### 7. Inflammation
 
-| Variable | Description | Expected format |
+| Analytical variable | CMS source | Availability / limitation |
 |---|---|---|
-| crp | C-reactive protein concentration | Numeric |
-| wbc | White blood cell count | Numeric |
-| neutrophils | Absolute neutrophil count | Numeric |
-| lymphocytes | Absolute lymphocyte count | Numeric |
-| nlr | Neutrophil-to-lymphocyte ratio | Numeric |
+| crp | Not yet confirmed | Requires verification |
+| wbc | Not yet confirmed | Requires verification |
+| neutrophils | Not yet confirmed | Requires verification |
+| lymphocytes | Not yet confirmed | Requires verification |
+| nlr | Derived variable | Requires absolute neutrophil and lymphocyte counts |
 
 **Derived variable:**
 
 NLR = Absolute neutrophil count / Absolute lymphocyte count.
 
-This ratio may provide an additional measure of systemic inflammatory activity.
+This variable will only be calculated if both measurements are available and sufficiently reliable.
 
-### 7. Metabolic and Electrolyte Status
+### 8. Metabolic and Mineral Status
 
-| Variable | Description | Expected format |
+| Analytical variable | CMS source | Availability / limitation |
 |---|---|---|
-| bicarbonate | Serum bicarbonate concentration | Numeric |
-| potassium | Serum potassium concentration | Numeric |
-| calcium | Serum calcium concentration | Numeric |
-| phosphorus | Serum phosphorus concentration | Numeric |
+| phosphorus | CL_MINERALMET | Documented |
+| calcium | CL_MINERALMET | Documented; corrected and uncorrected values must be distinguished |
+| potassium | Not yet confirmed | Requires verification |
+| bicarbonate | Not yet confirmed | Requires verification |
+| parathyroid_hormone | Not yet confirmed | Requires verification |
 
-Serum bicarbonate will be used to evaluate metabolic acidosis as a potential mortality predictor.
+Serum bicarbonate, if available, may be used to investigate metabolic acidosis as a potential predictor.
 
-### 8. Iron Metabolism and Anemia
+### 9. Iron Metabolism and Anemia
 
-| Variable | Description | Expected format |
+| Analytical variable | CMS source | Availability / limitation |
 |---|---|---|
-| ferritin | Serum ferritin concentration | Numeric |
-| tsat | Transferrin saturation | Numeric |
-| serum_iron | Serum iron concentration | Numeric |
-| tibc | Total iron-binding capacity | Numeric |
-| transferrin | Serum transferrin concentration | Numeric |
-| hemoglobin | Hemoglobin concentration | Numeric |
-| iv_iron_exposure | Intravenous iron administration | Numeric |
-| esa_exposure | Erythropoiesis-stimulating agent exposure | Numeric |
+| hemoglobin | CL_ANEMIA_MGT | Documented |
+| ferritin | CL_ANEMIA_MGT | Documented |
+| tsat | CL_ANEMIA_MGT | Documented |
+| iv_iron_exposure | CL_ANEMIA_MGT / related treatment data | Requires verification of exposure fields |
+| esa_exposure | CL_ANEMIA_MGT | Requires verification of treatment fields |
+| serum_iron | Not yet confirmed | Requires verification |
+| tibc | Not yet confirmed | Requires verification |
+| transferrin | Not yet confirmed | Requires verification |
 
 **Clinical considerations:**
 
 - Elevated ferritin does not necessarily indicate iron overload.
-- Ferritin must be interpreted alongside inflammatory markers.
-- TSAT provides additional information about circulating iron availability.
-- Cumulative intravenous iron exposure may be useful when longitudinal treatment data are available.
-- MRI-based liver iron concentration would be a more direct measure of tissue iron accumulation, if available.
-
-### 9. Outcome Variable
-
-| Variable | Description | Expected format |
-|---|---|---|
-| mortality_365d | All-cause mortality within 365 days after hospital discharge | Binary |
-
-Coding:
-
-- 1 = Death within 365 days.
-- 0 = No documented death within 365 days, with adequate follow-up.
-
-Patients without sufficient follow-up must not automatically be classified as survivors.
-
-### 10. Data Quality and Preprocessing
-
-For each candidate variable, we will document:
-
-- Original dataset column name.
-- Measurement unit.
-- Missing-value percentage.
-- Number of available observations.
-- Measurement date relative to hospital discharge.
-- Outliers and implausible values.
-- Preprocessing method.
-- Final inclusion or exclusion decision.
-
-### 11. Prediction Time and Data Leakage Prevention
-
-The prediction time is defined as hospital discharge.
-
-Only information available on or before discharge may be used as a predictor.
-
-Laboratory measurements will be selected using a predefined time window before discharge.
-
-Post-discharge information must not be used as a predictor.
-
-### 12. Variable Selection Strategy
-
-Candidate variables will be evaluated according to:
-
-1. Clinical relevance.
-2. Availability in the selected dataset.
-3. Data completeness.
-4. Measurement reliability.
-5. Potential predictive contribution.
-6. Risk of data leakage.
-
-The final feature set will be documented and justified.
-
----
-
-**Author:** Dra. María Azucena García Rodríguez
-**GitHub:** [@Azugr](https://github.com/Azugr)
-
-**Project:** Hemodialysis Mortality Prediction
-
-**Status:** Preliminary clinical variable specification.
+- Ferritin must be interpreted alongside inflammatory markers
